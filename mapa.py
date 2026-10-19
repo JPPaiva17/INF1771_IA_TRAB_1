@@ -129,14 +129,3 @@ class Mapa:
             nl, nc = l + dl, c + dc
             if self.dentro(nl, nc):
                 yield nl, nc
-
-
-if __name__ == "__main__":
-    m = Mapa()
-    print(f"Mapa: {m.linhas} linhas x {m.colunas} colunas")
-    print(f"Origem  '1': {m.origem}")
-    print(f"Destino 'U': {m.destino}")
-    print(f"Ginásios encontrados: {len(m.ginasios)}")
-
-    for simbolo, pos in m.ginasios.items():
-        print(f"  {simbolo}: posição {pos}, dificuldade {config.DIFICULDADE[simbolo]}")
