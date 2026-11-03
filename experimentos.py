@@ -19,7 +19,7 @@ ALGORITMOS = {
 
 def rodar(execucoes=30):
     escala_otima, custo_otimo, _, _ = otimo_exato()
-    print(f"Ótimo exato (programação dinâmica): {custo_otimo:.4f}\n")
+    print(f"Ótimo exato (programação dinâmica): {custo_otimo:.6f}\n")
 
     linhas_csv = []
     resumo = {}
@@ -65,22 +65,22 @@ def rodar(execucoes=30):
         escritor.writerows(linhas_csv)
 
     print(f"\nResultados ({execucoes} execuções por algoritmo, "
-          f"ótimo = {custo_otimo:.4f}):\n")
-    cabecalho = (f"{'Algoritmo':<28} {'Melhor':>10} {'Média':>10} {'Desvio':>8} "
-                 f"{'Pior':>10} {'Ótimo':>9} {'Tempo médio':>12}")
+          f"ótimo = {custo_otimo:.6f}):\n")
+    cabecalho = (f"{'Algoritmo':<28} {'Melhor':>13} {'Média':>13} {'Desvio':>10} "
+                 f"{'Pior':>13} {'Ótimo':>9} {'Tempo médio':>12}")
     print(cabecalho)
     print("-" * len(cabecalho))
     for nome_algoritmo, estatisticas in resumo.items():
-        print(f"{nome_algoritmo:<28} {estatisticas['melhor']:>10.4f} "
-              f"{estatisticas['media']:>10.4f} {estatisticas['desvio']:>8.4f} "
-              f"{estatisticas['pior']:>10.4f} "
+        print(f"{nome_algoritmo:<28} {estatisticas['melhor']:>13.6f} "
+              f"{estatisticas['media']:>13.6f} {estatisticas['desvio']:>10.6f} "
+              f"{estatisticas['pior']:>13.6f} "
               f"{estatisticas['acertos']:>4}/{execucoes:<4} {estatisticas['tempo']:>11.3f}s")
 
     print(f"\nExecuções individuais salvas em {ARQUIVO_CSV}.")
 
     melhor_sa = melhores_resultados["Simulated Annealing"]
     print(f"\nMelhor escala do Simulated Annealing "
-          f"(diferença para o ótimo: {melhor_sa.custo - custo_otimo:.4f}):")
+          f"(diferença para o ótimo: {melhor_sa.custo - custo_otimo:.6f}):")
     batalhas.imprimir_escala(melhor_sa.escala)
     if melhor_sa.custo - custo_otimo >= TOLERANCIA:
         print("\nEscala ótima (programação dinâmica):")

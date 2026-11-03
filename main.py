@@ -140,17 +140,17 @@ def main():
 
     titulo("Jornada (custo acumulado a cada trecho)")
     print(f"{'Trecho':<9}{'Passos':>7}{'Caminho':>9}  {'Pokémons na batalha':<34}"
-          f"{'Batalha':>9}{'Acumulado':>11}")
-    print("-" * 79)
+          f"{'Batalha':>12}{'Acumulado':>14}")
+    print("-" * 87)
     custo_celula_inicial = custo_inicial()
     print(f"{'início 1':<9}{0:>7}{custo_celula_inicial:>9}  {'(célula inicial)':<34}"
-          f"{'':>9}{custo_celula_inicial:>11.3f}")
+          f"{'':>12}{custo_celula_inicial:>14.6f}")
     for (partida, chegada, passos, custo_trecho, pokemons_na_batalha,
          tempo_da_batalha, acumulado) in linhas:
         texto_pokemons = ", ".join(pokemons_na_batalha) if pokemons_na_batalha else "(chegada)"
-        texto_tempo = f"{tempo_da_batalha:9.3f}" if pokemons_na_batalha else f"{'':>9}"
+        texto_tempo = f"{tempo_da_batalha:12.6f}" if pokemons_na_batalha else f"{'':>12}"
         print(f"{partida + ' -> ' + chegada:<9}{passos:>7}{custo_trecho:>9}  {texto_pokemons:<34}"
-              f"{texto_tempo}{acumulado:>11.3f}")
+              f"{texto_tempo}{acumulado:>14.6f}")
 
     titulo("Resultado final")
     print("Ordem de visita aos ginásios:")
@@ -164,15 +164,15 @@ def main():
         print(f"  {numero_visita:>2}º  ginásio {ginasio:>2} "
               f"(dificuldade {config.DIFICULDADE[ginasio]:>3}):"
               f" {', '.join(batalhas.nomes(mascara)):<30} "
-              f"{batalhas.tempo_batalha(indice, mascara):8.3f} min")
+              f"{batalhas.tempo_batalha(indice, mascara):11.6f} min")
 
     print("\nEnergia final de cada pokémon:")
     for pokemon, energia in energia_por_pokemon.items():
         print(f"  {pokemon:<12} {energia}")
 
-    print(f"\nCusto das batalhas (C_batalhas): {custo_batalhas:10.3f} min")
-    print(f"Custo da rota      (C_rota):     {custo_rota:10.3f} min")
-    print(f"Custo total        (C_total):    {custo_total:10.3f} min")
+    print(f"\nCusto das batalhas (C_batalhas): {custo_batalhas:13.6f} min")
+    print(f"Custo da rota      (C_rota):     {custo_rota:13.6f} min")
+    print(f"Custo total        (C_total):    {custo_total:13.6f} min")
 
     print(f"\nEstados expandidos pelo A* da rota: {resultado_rota.expandidos} "
           f"(gerados: {resultado_rota.gerados})")
@@ -188,12 +188,12 @@ def main():
         print(f"Rota: ótima (A* com heurística admissível).")
         diferenca = custo_batalhas - custo_otimo_batalhas
         if diferenca < TOLERANCIA_OTIMO:
-            print(f"Batalhas: a busca local atingiu o ótimo exato ({custo_otimo_batalhas:.3f}).")
-            print(f"C_total = {custo_total:.3f} é o ótimo global.")
+            print(f"Batalhas: a busca local atingiu o ótimo exato ({custo_otimo_batalhas:.6f}).")
+            print(f"C_total = {custo_total:.6f} é o ótimo global.")
         else:
-            print(f"Batalhas: {diferenca:.3f} min acima do ótimo exato "
-                  f"({custo_otimo_batalhas:.3f}).")
-            print(f"Ótimo global seria C_total = {custo_rota + custo_otimo_batalhas:.3f}.")
+            print(f"Batalhas: {diferenca:.6f} min acima do ótimo exato "
+                  f"({custo_otimo_batalhas:.6f}).")
+            print(f"Ótimo global seria C_total = {custo_rota + custo_otimo_batalhas:.6f}.")
 
 
 if __name__ == "__main__":

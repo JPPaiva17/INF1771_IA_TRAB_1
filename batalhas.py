@@ -23,7 +23,8 @@ MOVIMENTO_REMOVER = 1
 MOVIMENTO_TROCAR = 2
 MOVIMENTO_MOVER = 3
 MOVIMENTO_PERMUTAR = 4
-TOTAL_TIPOS_MOVIMENTO = 5
+MOVIMENTO_TROCAR_TIMES = 5
+TOTAL_TIPOS_MOVIMENTO = 6
 
 TOLERANCIA = 1e-12
 INTERVALO_HISTORICO = 500
@@ -181,6 +182,29 @@ def pode_usar(usos_por_pokemon, pokemon, batalhas_extras=1):
     return True
 
 
+def troca_valida(usos_por_pokemon, pokemon_que_entra, pokemon_que_sai):
+    """Diz se trocar um pokémon por outro num ginásio respeita as regras de energia.
+
+    Diferente de pode_usar(), considera o movimento inteiro: quem entra luta
+    uma vez a mais e quem sai luta uma vez a menos. Assim, quem sai pode
+    passar a ser o pokémon que chega acordado ao destino.
+
+    Args:
+        usos_por_pokemon: número de batalhas de cada pokémon.
+        pokemon_que_entra: índice do pokémon que passa a lutar no ginásio.
+        pokemon_que_sai: índice do pokémon que deixa de lutar no ginásio.
+
+    Returns:
+        True se, depois da troca, ninguém passa de ENERGIA_INICIAL batalhas e
+        ainda chegam pelo menos MIN_POKEMONS_VIVOS pokémons com energia.
+    """
+    usos_depois = usos_por_pokemon[:]
+    usos_depois[pokemon_que_entra] += 1
+    usos_depois[pokemon_que_sai] -= 1
+    return (usos_depois[pokemon_que_entra] <= ENERGIA_INICIAL
+            and vivos(usos_depois) >= MIN_POKEMONS_VIVOS)
+
+
 def vizinhos(escala, usos_por_pokemon):
     """Gera TODOS os movimentos válidos (usado pelo Hill Climbing).
 
@@ -215,7 +239,7 @@ def vizinhos(escala, usos_por_pokemon):
                         continue
                     bit_outro_pokemon = 1 << outro_pokemon
 
-                    if pode_usar(usos_por_pokemon, outro_pokemon):
+                    if troca_valida(usos_por_pokemon, outro_pokemon, pokemon):
                         yield [
                             (ginasio, mascara_sem_pokemon | bit_outro_pokemon)
                         ], outro_pokemon, pokemon
@@ -230,6 +254,14 @@ def vizinhos(escala, usos_por_pokemon):
 
             elif pode_usar(usos_por_pokemon, pokemon):
                 yield [(ginasio, mascara | bit_pokemon)], pokemon, None
+
+    for ginasio in range(TOTAL_GINASIOS):
+        for outro_ginasio in range(ginasio + 1, TOTAL_GINASIOS):
+            if escala[ginasio] != escala[outro_ginasio]:
+                yield [
+                    (ginasio, escala[outro_ginasio]),
+                    (outro_ginasio, escala[ginasio]),
+                ], None, None
 
 
 def vizinho_aleatorio(escala, usos_por_pokemon, rng):
@@ -262,7 +294,7 @@ def vizinho_aleatorio(escala, usos_por_pokemon, rng):
         elif tipo == MOVIMENTO_TROCAR:
             outro_pokemon = rng.randrange(TOTAL_POKEMONS)
             if (mascara & bit_pokemon and not mascara >> outro_pokemon & 1
-                    and pode_usar(usos_por_pokemon, outro_pokemon)):
+                    and troca_valida(usos_por_pokemon, outro_pokemon, pokemon)):
                 nova_mascara = (mascara ^ bit_pokemon) | (1 << outro_pokemon)
                 return [(ginasio, nova_mascara)], outro_pokemon, pokemon
 
@@ -275,7 +307,7 @@ def vizinho_aleatorio(escala, usos_por_pokemon, rng):
                     (outro_ginasio, escala[outro_ginasio] | bit_pokemon),
                 ], None, None
 
-        else:
+        elif tipo == MOVIMENTO_PERMUTAR:
             outro_ginasio = rng.randrange(TOTAL_GINASIOS)
             outro_pokemon = rng.randrange(TOTAL_POKEMONS)
             bit_outro_pokemon = 1 << outro_pokemon
@@ -285,6 +317,15 @@ def vizinho_aleatorio(escala, usos_por_pokemon, rng):
                 return [
                     (ginasio, (mascara ^ bit_pokemon) | bit_outro_pokemon),
                     (outro_ginasio, (mascara_outro ^ bit_outro_pokemon) | bit_pokemon),
+                ], None, None
+
+        elif tipo == MOVIMENTO_TROCAR_TIMES:
+            outro_ginasio = rng.randrange(TOTAL_GINASIOS)
+            mascara_outro = escala[outro_ginasio]
+            if outro_ginasio != ginasio and mascara_outro != mascara:
+                return [
+                    (ginasio, mascara_outro),
+                    (outro_ginasio, mascara),
                 ], None, None
 
 
@@ -430,14 +471,14 @@ def imprimir_escala(escala):
     """
     for ginasio, mascara in enumerate(escala):
         print(f"  {GINASIOS[ginasio]:>2} (dif {DIFICULDADES[ginasio]:>3}): "
-              f"{', '.join(nomes(mascara)):<45} {tempo_batalha(ginasio, mascara):8.3f}")
+              f"{', '.join(nomes(mascara)):<45} {tempo_batalha(ginasio, mascara):11.6f}")
 
     energias = ", ".join(
         f"{POKEMONS[pokemon]}={energia}"
         for pokemon, energia in enumerate(energia_final(escala))
     )
     print("  Energia final: " + energias)
-    print(f"  C_batalhas = {custo(escala):.4f}")
+    print(f"  C_batalhas = {custo(escala):.6f}")
 
 
 if __name__ == "__main__":
